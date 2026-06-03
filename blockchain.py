@@ -11,8 +11,8 @@ def hash_pubkey(pubkey_hex):
     return hashlib.sha256(bytes.fromhex(pubkey_hex)).hexdigest()
 
 class BlockChain:
-    def __init__(self):
-        self.difficulty = "0000"
+    def __init__(self , difficulty="0000"):
+        self.difficulty = difficulty
         self.chain: list[Block] = []
         self.transaction_pool: set[Transaction] = set()
         self.utxo_pool: dict[tuple[str, int], TxOutput] = {} #str:prev_txid int:output_index

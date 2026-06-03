@@ -1,4 +1,3 @@
-# protocols.py
 import threading
 import pickle
 import ecdsa
@@ -14,6 +13,7 @@ PROTOCOL_MAP = {
     b"block":           ("get_block",     True),
 }
 
+
 def recv_exact(sock, n):
     data = b''
     while len(data) < n:
@@ -23,23 +23,12 @@ def recv_exact(sock, n):
         data += packet
     return data
 
+
 def unpuck_data(client_socket):
-    try:
-        length_bytes = recv_exact(client_socket, 4)
-        if not length_bytes:
-            raise ValueError("No data received for length prefix.")
-        
-        length = int.from_bytes(length_bytes, byteorder='big')
-        data_bytes = recv_exact(client_socket, length)
-        if not data_bytes:
-            raise ValueError("No data received for payload.")
-
-        data = pickle.loads(data_bytes)
-        return data
-
-    except Exception as e:
-        print(f"Error during data unpacking: {e}")
-        return None
+    length_bytes = recv_exact(client_socket, 4)
+    length = int.from_bytes(length_bytes, byteorder='big')
+    data_bytes = recv_exact(client_socket, length)
+    return pickle.loads(data_bytes)
 
 
 def generic_protocol_handler(message_type, client_socket, instance):
@@ -52,12 +41,11 @@ def generic_protocol_handler(message_type, client_socket, instance):
 
         if needs_data:
             data = unpuck_data(client_socket)
-
         else:
             data = None
 
         instance.jobs.put((job_type.encode(), (client_socket, data)))
 
     except Exception as e:
-        print(f"Error in protocol handler: {e}")
+        print(f"Error in protocol handler: {e} on message : {message_type}")
         client_socket.close()
